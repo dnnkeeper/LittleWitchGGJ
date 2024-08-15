@@ -1,0 +1,17 @@
+{
+    "name": "ludiq.behaviours",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0a9872f9c3d56cd439c7fbe72d949c66",
+        "GUID:b6a515fd8db1d21478819cd80b734ef4"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

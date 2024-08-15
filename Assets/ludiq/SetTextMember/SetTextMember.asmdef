@@ -1,0 +1,17 @@
+{
+    "name": "SetTextMember",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6d0d517833e1efd48a6675b56e3b4942",
+        "GUID:0a9872f9c3d56cd439c7fbe72d949c66"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
