@@ -6,6 +6,6 @@ public class RigidbodyVelocity : MonoBehaviour
 
     void FixedUpdate()
     {
-        velocityMagnitude = GetComponent<Rigidbody>().linearVelocity.magnitude;
+        velocityMagnitude = GetComponent<Rigidbody>().velocity.magnitude;
     }
 }

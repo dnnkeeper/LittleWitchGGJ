@@ -22,11 +22,10 @@ namespace Dexart.Scripts.ObjectsPlacement
         void Remove();
     }
 
-    [RequireComponent(typeof(Collider))]
     [DisallowMultipleComponent]
     public class PlaceableObject : MonoBehaviour, IPlaceableObject
     {
-        public UnityEvent OnStartMoving, OnAccomodated, OnDestroyed;
+        public UnityEvent OnStartMoving, OnAccomodated;
 
         public int ObjectId => Mathf.Abs(GetInstanceID());
         public float angleWithSurface;
@@ -97,7 +96,7 @@ namespace Dexart.Scripts.ObjectsPlacement
                     {
                         originalPosition = transform.position;
                         originalRotation = transform.rotation;
-                        OnStartMoving.Invoke();
+                        OnStartMoving?.Invoke();
                         foreach (var colliderInfo in _colliders)
                         {
                             colliderInfo.Key.enabled = false;
@@ -128,18 +127,17 @@ namespace Dexart.Scripts.ObjectsPlacement
         [ContextMenu("Calculate Bounds")]
         void CalculateBounds()
         {
+            originalRotation = transform.rotation;
             if (transform.rotation != Quaternion.identity)
             {
-                originalRotation = transform.rotation;
                 transform.rotation = Quaternion.identity;
                 Debug.LogWarning("Should rotate to identity before calculating bounds!", this);
             }
-            else
-            {
-                colliderExtentsLocal = transform.InverseTransformVector(collider.bounds.extents);
-                colliderBoundsCenterLocal = transform.InverseTransformPoint(collider.bounds.center);
-                colliderBoundsCenterLocal = new Vector3(colliderBoundsCenterLocal.x * transform.lossyScale.x, colliderBoundsCenterLocal.y * transform.lossyScale.y, colliderBoundsCenterLocal.z * transform.lossyScale.z);
-            }
+            var bounds = GetEncapsulatedRenderersBounds();
+            colliderExtentsLocal = transform.InverseTransformVector(bounds.extents);
+            colliderBoundsCenterLocal = transform.InverseTransformPoint(bounds.center);
+            //colliderBoundsCenterLocal = new Vector3(colliderBoundsCenterLocal.x * transform.lossyScale.x, colliderBoundsCenterLocal.y * transform.lossyScale.y, colliderBoundsCenterLocal.z * transform.lossyScale.z);
+            transform.rotation = originalRotation;
 #if UNITY_EDITOR
             EditorUtility.SetDirty(this);
 #endif
@@ -220,7 +218,7 @@ namespace Dexart.Scripts.ObjectsPlacement
             var correctedRotation = rotation * Quaternion.Inverse(additionalRotation);
             rotation = correctedRotation;
 
-            position = position - correctedRotation * (colliderBoundsCenterLocal);
+            position = position - correctedRotation * Vector3.Scale(colliderBoundsCenterLocal, transform.lossyScale);
             var halfUp = (surfaceNormal * (Quaternion.Inverse(additionalRotation) * colliderExtentsLocal).y * transform.lossyScale.y);
             position += halfUp;
         }
@@ -251,6 +249,7 @@ namespace Dexart.Scripts.ObjectsPlacement
             {
                 if (relocateMaterial != null && renderer != null)
                     SetMaterial(relocateMaterial);
+                originalPosition = transform.position;
             }
             else
             {
@@ -361,8 +360,7 @@ namespace Dexart.Scripts.ObjectsPlacement
 
         void OnDrawGizmosSelected()
         {
-
-            var pivotPoint = transform.TransformPoint(colliderBoundsCenterLocal/transform.lossyScale.x);
+            var pivotPoint = transform.TransformPoint(colliderBoundsCenterLocal);
             var rot = transform.rotation * additionalRotation;
             Gizmos.color = Color.red;
             Gizmos.DrawLine(pivotPoint, pivotPoint + rot * Vector3.right * 0.5f);
@@ -373,11 +371,23 @@ namespace Dexart.Scripts.ObjectsPlacement
             Gizmos.color = Color.green;
             Gizmos.matrix = transform.localToWorldMatrix;
             Gizmos.DrawWireCube(transform.InverseTransformPoint(pivotPoint), colliderExtentsLocal * 2f);
-        }
 
-        private void OnDestroy()
-        {
-            OnDestroyed.Invoke();
+            //MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+            //var bounds = renderers[0].bounds;
+            //foreach (MeshRenderer rend in renderers)
+            //{
+            //    if (rend.gameObject.activeSelf && rend.enabled)
+            //    {
+            //        Gizmos.matrix = Matrix4x4.identity;
+            //        Gizmos.color = Color.blue;
+            //        Gizmos.DrawWireCube(rend.bounds.center, rend.bounds.extents * 2);
+            //        bounds.Encapsulate(rend.bounds);
+            //    }
+            //}
+            //Gizmos.matrix = Matrix4x4.identity;
+            //Gizmos.color = Color.green;
+            //Gizmos.DrawWireCube(bounds.center, bounds.extents * 2);
+
         }
 
         public LayerMask GetCollisionMask(GameObject gameObject)
@@ -395,32 +405,46 @@ namespace Dexart.Scripts.ObjectsPlacement
             return mask;
         }
 
+        public Bounds GetEncapsulatedRenderersBounds()
+        {
+            MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+            var bounds = renderers[0].bounds;
+            foreach (MeshRenderer rend in renderers)
+            {
+                if (rend.gameObject.activeSelf && rend.enabled)
+                {
+                    bounds.Encapsulate(rend.bounds);
+                }
+            }
+            return bounds;
+        }
+
         [ContextMenu("Add Box Collider")]
         public void AddBoxCollider()
         {
             BoxCollider boxCollider = gameObject.GetComponent<BoxCollider>();
 
-            Collider[] colliders = GetComponentsInChildren<Collider>();
-            if (colliders.Length == 0)
-            {
-                Debug.LogWarning("No colliders found in children.");
-                return;
-            }
+            var bounds = GetEncapsulatedRenderersBounds();
 
-            Bounds bounds =  new Bounds();//colliders[0].bounds;
-            foreach (Collider col in colliders)
-            {
-                if ( (col as BoxCollider != boxCollider) && !col.isTrigger && col.gameObject.activeSelf && col.enabled)
-                {
-                    Debug.Log("Bounds += " + bounds + " of "+col);
-                    bounds.Encapsulate(col.bounds);
-                }
-            }
             //bounds.center = new Vector3(bounds.center.x/transform.lossyScale.x, bounds.center.y/transform.lossyScale.y, bounds.center.z/transform.lossyScale.z);
             if (boxCollider == null)
                 boxCollider = gameObject.AddComponent<BoxCollider>();
-            boxCollider.center = bounds.center - transform.position;
-            boxCollider.size = bounds.size;//new Vector3(bounds.size.x/transform.lossyScale.x, bounds.size.y/transform.lossyScale.y, bounds.size.z/transform.lossyScale.z);
+            boxCollider.center = transform.InverseTransformPoint(bounds.center);
+            boxCollider.size = transform.InverseTransformVector(bounds.size);//new Vector3(bounds.size.x/transform.lossyScale.x, bounds.size.y/transform.lossyScale.y, bounds.size.z/transform.lossyScale.z);
+        }
+
+        void OnEnable()
+        {
+            if (collider == null)
+            {
+                AddBoxCollider();
+                CalculateBounds();
+            }
+            else
+            {
+                colliderExtentsLocal = transform.InverseTransformVector(collider.bounds.extents);
+                colliderBoundsCenterLocal = transform.InverseTransformPoint(collider.bounds.center);
+            }
         }
     }
 }

@@ -198,7 +198,7 @@
                     "id": "316c72ea-987a-4af7-9258-b1d29dca3047",
                     "path": "<Mouse>/scroll",
                     "interactions": "",
-                    "processors": "ScaleVector2(y=-1)",
+                    "processors": "ScaleVector2(x=0.01,y=-0.01)",
                     "groups": "",
                     "action": "Scroll",
                     "isComposite": false,
