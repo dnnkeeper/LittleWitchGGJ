@@ -63,14 +63,22 @@ public class InteractiveObject : MonoBehaviour
         }
 
         if (Switcheable)
-            switchOn = !switchOn;
+            Switch(!switchOn);
         else
-            switchOn = true;
-        onInteraction.Invoke(switchOn);
+            Switch(true);
     }
 
     public void OnInteractionAvailable(bool b)
     {
         onInteractionAvailable.Invoke(canBeUsed && b);
+    }
+
+    public void Switch(bool isOn)
+    {
+        if (switchOn != isOn)
+        {
+            switchOn = isOn;
+            onInteraction.Invoke(switchOn);
+        }
     }
 }

@@ -3,49 +3,50 @@ using UnityEngine;
 
 public class PositionOnMap3D : MonoBehaviour
 {
-    public Transform map;
-    public GameObject mapGameObject;
-    public BoxCollider mapBoundsCollider;
+    //public Transform map;
+    //GameObject mapGameObject;
+    //public BoxCollider mapBoundsCollider;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        CreateMapGameObject();
-    }
+    //void Start()
+    //{
+    //    CreateMapGameObject();
+    //}
 
-    [ContextMenu("Create MapGameObject")]
-    void CreateMapGameObject()
+    //[ContextMenu("Create MapGameObject")]
+    public GameObject CreateMapGameObject(Transform map, BoxCollider mapBoundsCollider = null)
     {
-        if (mapGameObject == null)
+        var mapGameObject = CreateVisualCopy(gameObject, map.transform);
+        var originalBoxCollider = GetComponent<BoxCollider>();
+        if (originalBoxCollider != null)
         {
-            mapGameObject = CreateVisualCopy(gameObject, map.transform);
-            var originalBoxCollider = GetComponent<BoxCollider>();
-            if (originalBoxCollider != null)
-            {
-                var boxCopy = mapGameObject.AddComponent<BoxCollider>();
-                boxCopy.size = originalBoxCollider.size;
-                boxCopy.center = originalBoxCollider.center;
-            }
-            var placeable = mapGameObject.AddComponent<PlaceableObject>();
-            var draggable = mapGameObject.AddComponent<DraggableGameObject>();
-            if (mapBoundsCollider != null)
-            {
-                draggable.dragLimitBounds = mapBoundsCollider.bounds;
-            }
-#if UNITY_EDITOR
-            UnityEditor.EditorUtility.SetDirty(this);
-#endif
+            var boxCopy = mapGameObject.AddComponent<BoxCollider>();
+            boxCopy.size = originalBoxCollider.size;
+            boxCopy.center = originalBoxCollider.center;
         }
+        var placeable = mapGameObject.AddComponent<PlaceableObject>();
+        var draggable = mapGameObject.AddComponent<DraggableGameObject>();
+        if (mapBoundsCollider != null)
+        {
+            draggable.dragLimitBounds = mapBoundsCollider.bounds;
+        }
+
+        var syncTransform = mapGameObject.AddComponent<SyncTransformBehaviour>();
+        syncTransform.targetTransform = transform;
+        //#if UNITY_EDITOR
+        //            UnityEditor.EditorUtility.SetDirty(this);
+        //#endif
+        return mapGameObject;
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        //mapGameObject.transform.localPosition = transform.localPosition;
-        if (mapGameObject != null)
-        {
-            transform.localPosition = mapGameObject.transform.localPosition;
-        }
-    }
+    //void Update()
+    //{
+    //    //mapGameObject.transform.localPosition = transform.localPosition;
+    //    if (mapGameObject != null)
+    //    {
+    //        transform.localPosition = mapGameObject.transform.localPosition;
+    //    }
+    //}
 
     public GameObject CreateVisualCopy(GameObject original, Transform parent = null)
     {
