@@ -9,14 +9,16 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
     public Bounds dragLimitBounds;
     public void OnBeginDrag(PointerEventData eventData)
     {
-        placeableObject = GetComponent<PlaceableObject>();
+        if (!enabled)
+            return;
         placeableObject.GetComponent<Collider>().enabled = false;
         placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        placeableObject = GetComponent<PlaceableObject>();
+        if (!enabled)
+            return;
         if (eventData.pointerCurrentRaycast.gameObject != gameObject)
         {
             if (dragLimitBounds == null || dragLimitBounds.size.sqrMagnitude < 0.01f || dragLimitBounds.Contains(eventData.pointerCurrentRaycast.worldPosition)) {
@@ -65,8 +67,13 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        placeableObject = GetComponent<PlaceableObject>();
         placeableObject.GetComponent<Collider>().enabled = true;
         placeableObject.Accommodate();
+    }
+
+    void OnEnable()
+    {
+        if (placeableObject == null)
+            placeableObject = GetComponent<PlaceableObject>();
     }
 }

@@ -79,9 +79,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b17737288880a0848bc7e14c9e7c5268, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapObjectsCollection: {fileID: 0}
+  originalObjectsCollection: {fileID: 0}
   mapRoot: {fileID: 8298533477593430061}
   mapBounds: {fileID: 3844196152900406580}
+  mapObjectsSettings: []
+  highlightPrefab: {fileID: 8716190942569517529, guid: acf9e90f70a90c54bab81859e4839f57, type: 3}
 --- !u!1 &5046858613330467429
 GameObject:
   m_ObjectHideFlags: 0
