@@ -49,6 +49,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Scroll",
+                    "type": "Value",
+                    "id": "f598ba37-60c8-4029-953f-73ec51ec2f30",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -123,7 +132,7 @@
                     "id": "3e010a0e-8dde-4544-bb73-f3040ca11869",
                     "path": "<Mouse>/delta",
                     "interactions": "",
-                    "processors": "InvertVector2(invertX=false),ScaleVector2(x=9,y=9)",
+                    "processors": "InvertVector2(invertX=false),ScaleVector2",
                     "groups": "",
                     "action": "Look",
                     "isComposite": false,
@@ -134,7 +143,7 @@
                     "id": "285230a9-0e1c-4949-bb02-aee8f7ea52a6",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "InvertVector2(invertX=false),ScaleVector2(x=70,y=70)",
+                    "processors": "InvertVector2(invertX=false),ScaleVector2",
                     "groups": "",
                     "action": "Look",
                     "isComposite": false,
@@ -181,6 +190,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "316c72ea-987a-4af7-9258-b1d29dca3047",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "ScaleVector2(y=-1)",
+                    "groups": "",
+                    "action": "Scroll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
