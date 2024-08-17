@@ -1,4 +1,3 @@
-using Dexart.Scripts.ObjectsPlacement;
 using UnityEngine;
 
 public class PositionOnMap3D : MonoBehaviour

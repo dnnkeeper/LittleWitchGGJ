@@ -1,18 +1,20 @@
-using Dexart.Scripts.ObjectsPlacement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlaceableObject))]
 public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     private PlaceableObject placeableObject;
     public Bounds dragLimitBounds;
+    Vector3 dragStartWorldPos;
+    bool isDragging;
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (!enabled)
             return;
         placeableObject.GetComponent<Collider>().enabled = false;
-        placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
+        //placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -21,15 +23,37 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
             return;
         if (eventData.pointerCurrentRaycast.gameObject != gameObject)
         {
-            if (dragLimitBounds == null || dragLimitBounds.size.sqrMagnitude < 0.01f || dragLimitBounds.Contains(eventData.pointerCurrentRaycast.worldPosition)) {
-                DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.green, Time.deltaTime);
-
-                placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
-            }
-            else
+            if (!isDragging)
             {
-                DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.red, Time.deltaTime);
+                isDragging = true;
+                dragStartWorldPos = eventData.pointerCurrentRaycast.worldPosition;
             }
+            Debug.DrawLine(dragStartWorldPos, eventData.pointerCurrentRaycast.worldPosition, Color.green);
+
+            Debug.DrawLine(eventData.pressEventCamera.transform.position, eventData.pointerCurrentRaycast.worldPosition, Color.green);
+            if (Mouse.current.rightButton.IsPressed())
+            {
+                Quaternion newRotation = Quaternion.Euler(0, eventData.delta.x * 0.5f, 0) * placeableObject.transform.rotation;
+                placeableObject.Relocate(Vector3.zero, newRotation, 0f, false);
+            }
+            else if (Mouse.current.leftButton.IsPressed())
+            {
+                if (dragLimitBounds == null || dragLimitBounds.size.sqrMagnitude < 0.01f || dragLimitBounds.Contains(eventData.pointerCurrentRaycast.worldPosition))
+                {
+                    DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.green, Time.deltaTime);
+
+                    placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition-dragStartWorldPos, placeableObject.transform.rotation);
+                    dragStartWorldPos = eventData.pointerCurrentRaycast.worldPosition;
+                }
+                else
+                {
+                    DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.red, Time.deltaTime);
+                }
+            }
+        }
+        else
+        {
+            Debug.DrawLine(eventData.pressEventCamera.transform.position, eventData.pointerCurrentRaycast.worldPosition, Color.red);
         }
     }
 
@@ -67,6 +91,7 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        isDragging = false;
         placeableObject.GetComponent<Collider>().enabled = true;
         placeableObject.Accommodate();
     }
