@@ -29,7 +29,7 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
     public bool canBePlacedAtPlaceable;
     public bool rotateTowardsZ;
 
-    public Quaternion additionalRotation = Quaternion.identity;
+    //public Quaternion additionalRotation = Quaternion.identity;
 
     //[SerializeField]Transform transformPivot;
 
@@ -59,8 +59,8 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
     [SerializeField] private float stickOffsetDistance = -1f;
 
     [SerializeField] private List<Material> mainMaterials = new();
-    [SerializeField] private Material relocateMaterial;
-    [SerializeField] private Material blockedMaterial;
+    public Material relocateMaterial;
+    public Material blockedMaterial;
 
     [SerializeField] protected float angleWithFloorMin = 0f;
     [SerializeField] protected float angleWithFloorMax = 180f;
@@ -89,8 +89,8 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
                 }
                 else
                 {
-                    originalPosition = transform.position;
-                    originalRotation = transform.rotation;
+                    lastValidPosition = transform.position;
+                    lastValidRotation = transform.rotation;
                     OnStartMoving?.Invoke();
                     foreach (var colliderInfo in _colliders)
                     {
@@ -117,21 +117,22 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
         // }
 
     }
-    Vector3 originalPosition;
-    Quaternion originalRotation = Quaternion.identity;
+    Vector3 lastValidPosition;
+    Quaternion lastValidRotation = Quaternion.identity;
     [ContextMenu("Calculate Bounds")]
     void CalculateBounds()
     {
-        originalRotation = transform.rotation;
+        lastValidRotation = transform.rotation;
         if (transform.rotation != Quaternion.identity)
         {
             transform.rotation = Quaternion.identity;
             Debug.LogWarning("Should rotate to identity before calculating bounds!", this);
         }
         var bounds = GetEncapsulatedRenderersBounds();
-        //collider.bounds.extents = transform.InverseTransformVector(bounds.extents);
-        //collider.bounds.center = transform.InverseTransformPoint(bounds.center);
-        transform.rotation = originalRotation;
+        colliderCenterLocal = transform.InverseTransformPoint(collider.bounds.center);
+        fromColliderCenterToPivot = transform.position - collider.bounds.center;
+        colliderExtentsLocal = transform.InverseTransformVector(collider.bounds.extents);
+        transform.rotation = lastValidRotation;
 #if UNITY_EDITOR
         EditorUtility.SetDirty(this);
 #endif
@@ -139,13 +140,13 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
     [ContextMenu("Return Rotation")]
     void ReturnRotation()
     {
-        transform.rotation = originalRotation;
+        transform.rotation = lastValidRotation;
     }
 
     [ContextMenu("Return Position")]
     void ReturnPosition()
     {
-        transform.position = originalPosition;
+        transform.position = lastValidPosition;
     }
 
     void Reset()
@@ -188,8 +189,12 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
 
     public void Accommodate()
     {
-        Debug.Log($"[{GetType()}] Accommodated {gameObject}", this);
-        if (!CanBePlaced()) {
+
+        Debug.Log($"[{GetType()}] Accommodated {gameObject.name}", gameObject);
+        //SnapToGround();
+        if (!CanBePlaced())
+        {
+            Debug.LogWarning("Can't be placed here, return");
             ReturnPosition();
             ReturnRotation();
         }
@@ -201,52 +206,112 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
         OnAccomodated?.Invoke();
     }
 
+    void SnapToGround()
+    {
+        float offset = colliderExtents.y;
+        var castStart = colliderCenter + Vector3.up * offset;
+        //Debug.DrawLine(transform.position, castStart, Color.blue, 2f);
+        var boxCastExtents = colliderExtents * 0.99f;
+        
+        //DrawBox(colliderCenter, transform.rotation, colliderExtents * 2f, Color.cyan, 2f);
+        //DrawBox(colliderCenter, transform.rotation, boxCastExtents * 2f, Color.blue, 2f);
+
+        bool wascolliderEnabled = collider.enabled;
+        collider.enabled = false;
+        if (Physics.BoxCast(castStart, boxCastExtents, Vector3.down, out RaycastHit hit, transform.rotation, 10f, GetCollisionMask(gameObject), QueryTriggerInteraction.Ignore))
+        {
+            //Debug.Log($"SnapToGround hit.distance: {hit.distance}-{colliderExtents.y}");
+            //Debug.DrawLine(castStart, castStart + Vector3.down * hit.distance, Color.red, 2f);
+            var hitOffset = Vector3.down * (hit.distance - offset);
+            var hitCenter = castStart + hitOffset;
+            //DrawBox(hitCenter, transform.rotation, boxCastExtents * 2f, Color.red, 2f);
+            if (CheckCollisionsAt(transform.position + hitOffset, transform.rotation, colliderExtentsLocalScaled))
+            {
+                Relocate(hitOffset, transform.rotation);
+            }
+        }
+        else
+        {
+            //DrawBox(castStart, transform.rotation, colliderExtents * 2f, Color.red, 2f);
+
+            //Debug.DrawLine(castStart, castStart + Vector3.down * 10f, Color.red, 2f);
+        }
+        collider.enabled = wascolliderEnabled;
+    }
+    Vector3 colliderCenter => transform.TransformPoint(colliderCenterLocal);
+    Vector3 colliderExtents => transform.TransformVector(colliderExtentsLocal);
+    public Vector3 colliderCenterLocal, colliderExtentsLocal;
+    Vector3 fromColliderCenterToPivot;
+    Vector3 colliderExtentsLocalScaled => Vector3.Scale(colliderExtentsLocal, transform.lossyScale);
+
     public void Remove()
     {
         Destroy(this.gameObject);
     }
 
-    public bool Relocate(Vector3 offset, Quaternion rotation, float distanceToGround = 0, bool positionIsOnGround = true)
+    public bool Relocate(Vector3 targetPosition, Quaternion rotation, float distanceToGround = 0, bool positionIsOnGround = true)
     {
         currState = PlacementStatus.Relocating;
 
-        var position = transform.position + offset;
-        transform.position = position;
-        transform.rotation = rotation;
+        //GetCorrectPositionAndRotation(ref targetPosition, ref rotation);
+        if (positionIsOnGround)
+            targetPosition = targetPosition + fromColliderCenterToPivot + transform.up * colliderExtents.y;
 
-        var canBePlaced = CanBePlacedAt(position, rotation, distanceToGround);
+
+        var canBePlaced = CanBePlacedAt(targetPosition, rotation, distanceToGround);
 
         if (canBePlaced)
         {
+            transform.position = targetPosition;
+            transform.rotation = rotation;
             if (relocateMaterial != null && renderer != null)
                 SetMaterial(relocateMaterial);
-            originalPosition = transform.position;
+            lastValidPosition = transform.position;
+            lastValidRotation = transform.rotation;
+            DrawBox(transform.position, transform.rotation, colliderExtentsLocalScaled * 2f, Color.cyan, Time.deltaTime);
         }
         else
         {
             if (blockedMaterial != null && renderer != null)
                 SetMaterial(blockedMaterial);
+            
+            DrawBox(transform.position, transform.rotation, colliderExtentsLocalScaled * 2f, Color.red, Time.deltaTime);
         }
 
         return canBePlaced;
 
     }
 
+    void Update()
+    {
+        DrawBox(lastValidPosition, lastValidRotation, colliderExtentsLocalScaled * 2f, Color.yellow, Time.deltaTime);
+    }
+
+    public void GetCorrectPositionAndRotation(ref Vector3 position, ref Quaternion rotation)
+    {
+        var surfaceNormal = rotation * Vector3.up;
+        var correctedRotation = rotation;
+        rotation = correctedRotation;
+
+        position = position - correctedRotation * (colliderCenterLocal);
+        var halfUp = (surfaceNormal * colliderExtentsLocal.y * transform.lossyScale.y);
+        position += halfUp;
+    }
+
     public bool CanBePlaced()
     {
         var rotation = transform.rotation;
-        var position = transform.position + rotation * (collider.bounds.center);
+        var position = transform.position;// + rotation * (colliderCenter);
         // var halfUp = ( rotation * Vector3.up * ( Quaternion.Inverse(additionalRotation) * collider.bounds.extents).y * transform.lossyScale.y );
         // position += halfUp;
-        angleWithSurface = Vector3.Angle(rotation * additionalRotation * Vector3.up, floorNormal);
+        angleWithSurface = Vector3.Angle(rotation * Vector3.up, floorNormal);
         if (angleWithSurface < angleWithFloorMin || angleWithSurface > angleWithFloorMax)
         {
             Debug.Log("bad angle " + angleWithSurface);
             return false;
         }
 
-        var colliderExtentsLocalScaled = Vector3.Scale(collider.bounds.extents, transform.lossyScale);
-        return CheckCollisionsAt(position, rotation, colliderExtentsLocalScaled, 10f);
+        return CheckCollisionsAt(position, rotation, colliderExtentsLocalScaled, Time.deltaTime);
     }
 
     public bool CanBePlacedAt(Vector3 position, Quaternion rotation, float distanceToGround = 0)
@@ -256,11 +321,8 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
         {
             return false;
         }
-        position = position + (rotation * Vector3.up * (Quaternion.Inverse(additionalRotation) * collider.bounds.extents).y * transform.lossyScale.y);
-        rotation = rotation * Quaternion.Inverse(additionalRotation);
-        var colliderExtentsLocalScaled = Vector3.Scale(collider.bounds.extents, transform.lossyScale);
-
-        return CheckCollisionsAt(position, rotation, colliderExtentsLocalScaled);
+        position = position + (rotation * Vector3.up * colliderExtents.y * transform.lossyScale.y);
+        return CheckCollisionsAt(position, rotation, colliderExtentsLocalScaled, Time.deltaTime);
     }
 
     bool CheckCollisionsAt(Vector3 position, Quaternion rotation, Vector3 colliderExtentsLocalScaled, float debugRenderTime = 0)
@@ -270,13 +332,13 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
             if (!collider.transform.IsChildOf(transform))
             {
                 Debug.DrawLine(transform.position, position, Color.red, debugRenderTime);
-                DrawBox(position, rotation, colliderExtentsLocalScaled * 2f, Color.red, debugRenderTime);
+                //DrawBox(position, rotation, colliderExtentsLocalScaled * 2f, Color.red, debugRenderTime);
                 return false;
             }
         }
-        Debug.DrawLine(transform.position, position, Color.cyan, debugRenderTime);
+        //Debug.DrawLine(transform.position, position, Color.cyan, debugRenderTime);
 
-        DrawBox(position, rotation, colliderExtentsLocalScaled * 2f, Color.cyan);
+        //DrawBox(position, rotation, colliderExtentsLocalScaled * 2f, Color.cyan, debugRenderTime);
         return true;
     }
     public void DrawBox(Vector3 pos, Quaternion rot, Vector3 scale, Color c, float t = 0)
@@ -331,8 +393,8 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
 
     void OnDrawGizmosSelected()
     {
-        var pivotPoint = transform.TransformPoint(collider.bounds.center);
-        var rot = transform.rotation * additionalRotation;
+        var pivotPoint = colliderCenter;
+        var rot = transform.rotation;
         Gizmos.color = Color.red;
         Gizmos.DrawLine(pivotPoint, pivotPoint + rot * Vector3.right * 0.5f);
         Gizmos.color = Color.blue;
@@ -341,7 +403,9 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
         Gizmos.DrawLine(pivotPoint, pivotPoint + rot * Vector3.up * 0.5f);
         Gizmos.color = Color.green;
         Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawWireCube(transform.InverseTransformPoint(pivotPoint), collider.bounds.extents * 2f);
+        
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireCube(colliderCenterLocal, colliderExtentsLocal * 2f);
 
         //MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
         //var bounds = renderers[0].bounds;
@@ -409,6 +473,9 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
         if (collider == null)
         {
             AddBoxCollider();
+        }
+        if (colliderExtentsLocal.sqrMagnitude == 0)
+        {
             CalculateBounds();
         }
     }

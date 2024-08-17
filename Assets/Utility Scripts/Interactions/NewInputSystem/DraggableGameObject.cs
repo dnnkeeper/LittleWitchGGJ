@@ -34,7 +34,7 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
             if (Mouse.current.rightButton.IsPressed())
             {
                 Quaternion newRotation = Quaternion.Euler(0, eventData.delta.x * 0.5f, 0) * placeableObject.transform.rotation;
-                placeableObject.Relocate(Vector3.zero, newRotation, 0f, false);
+                placeableObject.Relocate(transform.position, newRotation, 0f, false);
             }
             else if (Mouse.current.leftButton.IsPressed())
             {
@@ -42,7 +42,7 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
                 {
                     DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.green, Time.deltaTime);
 
-                    placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition-dragStartWorldPos, placeableObject.transform.rotation);
+                    placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
                     dragStartWorldPos = eventData.pointerCurrentRaycast.worldPosition;
                 }
                 else

@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PositionOnMap3D : MonoBehaviour
 {
+    public Material relocateMaterial;
+    public Material blockedMaterial;
     //public Transform map;
     //GameObject mapGameObject;
     //public BoxCollider mapBoundsCollider;
@@ -23,6 +25,8 @@ public class PositionOnMap3D : MonoBehaviour
             boxCopy.center = originalBoxCollider.center;
         }
         var placeable = mapGameObject.AddComponent<PlaceableObject>();
+        placeable.relocateMaterial = relocateMaterial;
+        placeable.blockedMaterial = blockedMaterial;
         var draggable = mapGameObject.AddComponent<DraggableGameObject>();
         if (mapBoundsCollider != null)
         {
