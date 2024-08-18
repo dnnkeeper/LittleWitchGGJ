@@ -32,7 +32,7 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
         }
         else if (Mouse.current.leftButton.IsPressed())
         {
-            Debug.Log("Dragging");
+            //Debug.Log("Dragging");
             var screenPoint = eventData.pointerCurrentRaycast.screenPosition;
             var ray = eventData.enterEventCamera.ScreenPointToRay(screenPoint);
             Debug.DrawLine(ray.origin, ray.origin + ray.direction * 200, Color.red, Time.deltaTime);

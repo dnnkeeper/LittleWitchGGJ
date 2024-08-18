@@ -301,7 +301,7 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
 
     void Update()
     {
-        DrawBox(lastValidPosition, lastValidRotation, colliderExtentsLocalScaled * 2f, Color.yellow, Time.deltaTime);
+        //DrawBox(lastValidPosition, lastValidRotation, colliderExtentsLocalScaled * 2f, Color.yellow, Time.deltaTime);
     }
 
     public void GetCorrectPositionAndRotation(ref Vector3 position, ref Quaternion rotation)
