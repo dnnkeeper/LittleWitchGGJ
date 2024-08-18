@@ -149,6 +149,14 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
         transform.position = lastValidPosition;
     }
 
+    public void ReturnToValidPosition()
+    {
+        if (transform.position != lastValidPosition)
+            Debug.LogError($"{transform.position} != {lastValidPosition}");
+        ReturnPosition();
+        ReturnRotation();
+    }
+
     void Reset()
     {
         //colliderExtents = collider.bounds.extents;
@@ -192,18 +200,27 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
 
         Debug.Log($"[{GetType()}] Accommodated {gameObject.name}", gameObject);
         //SnapToGround();
-        if (!CanBePlaced())
-        {
-            Debug.LogWarning("Can't be placed here, return");
-            ReturnPosition();
-            ReturnRotation();
-        }
+       
         currState = PlacementStatus.Accommodated;
         if (renderer != null)
         {
             SetMaterial(mainMaterials);
         }
+
+        if (!CanBePlaced())
+        {
+            Debug.LogWarning($"Can't be placed here, return to {lastValidPosition}");
+            //DrawBox(transform.position, transform.rotation, colliderExtentsLocalScaled * 2f, Color.red, 10f);
+
+            ReturnPosition();
+            ReturnRotation();
+            // Somehow it's not working, so we need to wait a bit
+            //Invoke(nameof(ReturnToValidPosition), 0.1f);
+            //DrawBox(transform.position, transform.rotation, colliderExtentsLocalScaled * 2f, Color.blue, 10f);
+        }
+
         OnAccomodated?.Invoke();
+
     }
 
     void SnapToGround()
@@ -259,7 +276,7 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
 
 
         var canBePlaced = CanBePlacedAt(targetPosition, rotation, distanceToGround);
-
+        
         if (canBePlaced)
         {
             transform.position = targetPosition;

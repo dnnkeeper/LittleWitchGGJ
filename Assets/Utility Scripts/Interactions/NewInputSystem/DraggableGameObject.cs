@@ -9,6 +9,8 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
     public Bounds dragLimitBounds;
     Vector3 dragStartWorldPos;
     bool isDragging;
+    public float snapDistance = 0.1f;
+    public LayerMask layerMask = 1 << 2;
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (!enabled)
@@ -21,29 +23,34 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
     {
         if (!enabled)
             return;
-        if (eventData.pointerCurrentRaycast.gameObject != gameObject)
+        
+        
+        if (Mouse.current.rightButton.IsPressed())
         {
-            if (!isDragging)
+            Quaternion newRotation = Quaternion.Euler(0, eventData.delta.x * 0.5f, 0) * placeableObject.transform.rotation;
+            placeableObject.Relocate(transform.position, newRotation, 0f, false);
+        }
+        else if (Mouse.current.leftButton.IsPressed())
+        {
+            Debug.Log("Dragging");
+            var screenPoint = eventData.pointerCurrentRaycast.screenPosition;
+            var ray = eventData.enterEventCamera.ScreenPointToRay(screenPoint);
+            Debug.DrawLine(ray.origin, ray.origin + ray.direction * 200, Color.red, Time.deltaTime);
+            // Raycast only on ground layer:
+            if ( Physics.Raycast(ray, out RaycastHit hit, 200, layerMask, QueryTriggerInteraction.Ignore))
             {
-                isDragging = true;
-                dragStartWorldPos = eventData.pointerCurrentRaycast.worldPosition;
-            }
-            Debug.DrawLine(dragStartWorldPos, eventData.pointerCurrentRaycast.worldPosition, Color.green);
-
-            Debug.DrawLine(eventData.pressEventCamera.transform.position, eventData.pointerCurrentRaycast.worldPosition, Color.green);
-            if (Mouse.current.rightButton.IsPressed())
-            {
-                Quaternion newRotation = Quaternion.Euler(0, eventData.delta.x * 0.5f, 0) * placeableObject.transform.rotation;
-                placeableObject.Relocate(transform.position, newRotation, 0f, false);
-            }
-            else if (Mouse.current.leftButton.IsPressed())
-            {
-                if (dragLimitBounds == null || dragLimitBounds.size.sqrMagnitude < 0.01f || dragLimitBounds.Contains(eventData.pointerCurrentRaycast.worldPosition))
+                var hitPosition = hit.point;
+                
+                if (!isDragging)
+                {
+                    isDragging = true;
+                    dragStartWorldPos = hitPosition;
+                }
+                if (dragLimitBounds == null || dragLimitBounds.size.sqrMagnitude < 0.01f || dragLimitBounds.Contains(hitPosition))
                 {
                     DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.green, Time.deltaTime);
 
-                    placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
-                    dragStartWorldPos = eventData.pointerCurrentRaycast.worldPosition;
+                    placeableObject.Relocate(hitPosition, placeableObject.transform.rotation);
                 }
                 else
                 {
@@ -51,10 +58,16 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
                 }
             }
         }
-        else
-        {
-            Debug.DrawLine(eventData.pressEventCamera.transform.position, eventData.pointerCurrentRaycast.worldPosition, Color.red);
-        }
+        
+    }
+
+    Vector3 SnapPositionToGrid(Vector3 originalPosition)
+    {
+        return new Vector3(
+            Mathf.Round(originalPosition.x / snapDistance) * snapDistance,
+            Mathf.Round(originalPosition.y / snapDistance) * snapDistance,
+            Mathf.Round(originalPosition.z / snapDistance) * snapDistance
+        );
     }
 
     public void DrawBox(Vector3 pos, Quaternion rot, Vector3 scale, Color c, float t = 0)

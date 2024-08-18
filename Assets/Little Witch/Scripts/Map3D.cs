@@ -18,6 +18,9 @@ public class Map3D : MonoBehaviour
 
     public MapObjectInfo[] mapObjectsSettings;
     public GameObject highlightPrefab;
+
+    public LayerMask tableLayerMask = 1 << 2;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,6 +37,7 @@ public class Map3D : MonoBehaviour
 
     void LateUpdate()
     {
+        ScaleMapRoot();
         foreach (var kvp in originalCopies)
         {
             var original = kvp.Key;
@@ -48,6 +52,8 @@ public class Map3D : MonoBehaviour
             if (draggable != null)
             {
                 draggable.enabled = mapObjectSetting.draggable;
+                draggable.layerMask = tableLayerMask;
+                draggable.gameObject.layer = mapRoot.gameObject.layer;
                 HighlightObject(copy, draggable.enabled);
             }
         }
@@ -72,6 +78,7 @@ public class Map3D : MonoBehaviour
 
     private void OnValidate()
     {
+        //ScaleMapRoot();
         if (mapObjectsSettings.Length == 0 && originalObjectsCollection != null)
         {
             mapObjectsSettings = new MapObjectInfo[originalObjectsCollection.mapObjects.Length];
@@ -84,4 +91,19 @@ public class Map3D : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(this);
 #endif
     }
+
+    [ContextMenu("ScaleMapRoot")]
+    void ScaleMapRoot()
+    {
+        if (mapRoot != null)
+        {
+            // Keep uniform scale of map root while preserving its scaling 
+            var lossyScale = mapRoot.transform.lossyScale;
+            lossyScale.y = lossyScale.x;
+            lossyScale.z = lossyScale.x;
+            mapRoot.transform.localScale = mapRoot.transform.parent.InverseTransformVector(lossyScale);
+        }
+    }
+
+
 }

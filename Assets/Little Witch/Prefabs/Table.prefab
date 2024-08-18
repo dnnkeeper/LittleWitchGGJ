@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8298533477593430061}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Map Offset
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26,7 +26,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 4.66, y: 0, z: 3.4}
-  m_LocalScale: {x: 0.19999999, y: 0.2, z: 0.2}
+  m_LocalScale: {x: 1, y: 1.0000001, z: 1.0000001}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5702660931607614958}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5702660931607614958}
   - component: {fileID: 6321112483970509713}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: 3D MAP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -84,6 +84,9 @@ MonoBehaviour:
   mapBounds: {fileID: 3844196152900406580}
   mapObjectsSettings: []
   highlightPrefab: {fileID: 8716190942569517529, guid: acf9e90f70a90c54bab81859e4839f57, type: 3}
+  tableLayerMask:
+    serializedVersion: 2
+    m_Bits: 32768
 --- !u!1 &5046858613330467429
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,7 +152,7 @@ GameObject:
   - component: {fileID: 1534282107782408475}
   - component: {fileID: 8147412961277632914}
   - component: {fileID: 2323595476164851627}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Table Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -165,7 +168,7 @@ Transform:
   m_GameObject: {fileID: 6163225081913612625}
   serializedVersion: 2
   m_LocalRotation: {x: 0.3535534, y: 0.61237246, z: -0.3535534, w: 0.61237246}
-  m_LocalPosition: {x: -1.6551743, y: 3.911, z: 0.7156029}
+  m_LocalPosition: {x: -2, y: 4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -302,7 +305,7 @@ GameObject:
   - component: {fileID: 7470178311855759464}
   - component: {fileID: 2106924850264503314}
   - component: {fileID: 4097788179388931568}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Table
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -498,7 +501,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6679203763858330803, guid: 70ddf5134c1b32143baee9002c3319a1, type: 3}
       propertyPath: m_Layer
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6679203763858330803, guid: 70ddf5134c1b32143baee9002c3319a1, type: 3}
       propertyPath: m_IsActive
@@ -506,7 +509,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6709740853568648771, guid: 70ddf5134c1b32143baee9002c3319a1, type: 3}
       propertyPath: m_Layer
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6709740853568648771, guid: 70ddf5134c1b32143baee9002c3319a1, type: 3}
       propertyPath: m_IsActive
