@@ -43,6 +43,8 @@ public class Map3D : MonoBehaviour
             var original = kvp.Key;
             var copy = kvp.Value;
             copy.transform.localPosition = original.transform.localPosition;
+            copy.transform.localRotation = original.transform.localRotation;
+
         }
 
         foreach (var mapObjectSetting in mapObjectsSettings)
