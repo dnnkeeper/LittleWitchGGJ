@@ -1,5 +1,6 @@
 using KinematicCharacterController;
 using UnityEngine;
+using Spine.Unity;
 
 
 [RequireComponent(typeof(KinematicCharacterMotor))]
@@ -7,6 +8,7 @@ public class KinematicCharacterAnimator : MonoBehaviour
 {
     KinematicCharacterMotor motor;
     public Animator animator;
+    public SkeletonAnimation skeletonAnimation;
     void Awake()
     {
         motor = GetComponent<KinematicCharacterMotor>();
@@ -34,6 +36,23 @@ public class KinematicCharacterAnimator : MonoBehaviour
             animator.SetFloat("GroundVelocity", new Vector3(localVelocity.x,0, localVelocity.z).magnitude);
             animator.SetBool("IsGrounded", motor.GroundingStatus.IsStableOnGround);
         }
+        if (skeletonAnimation!=null){
+            if (velocityX > 0)
+            {
+                skeletonAnimation.transform.localScale = new Vector3(1, 1, 1);
+                skeletonAnimation.AnimationState.SetAnimation(0, "walk", true);
+            }
+            else if (velocityX<0)
+            {
+                skeletonAnimation.transform.localScale = new Vector3 (-1, 1, 1);
 
+                skeletonAnimation.AnimationState.SetAnimation(0, "walk", true);
+            }
+            else
+            {
+                skeletonAnimation.AnimationState.SetAnimation(0, "idle", true);
+            }
+            skeletonAnimation.AnimationState.Update(Time.time);
+        }
     }
 }
