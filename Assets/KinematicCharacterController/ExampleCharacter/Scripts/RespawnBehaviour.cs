@@ -2,11 +2,13 @@ using KinematicCharacterController;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class RespawnBehaviour : MonoBehaviour
 {
     Vector3 spawnPosition;
     Quaternion spawnRotation;
+    public UnityEvent onRespawned;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,5 +29,6 @@ public class RespawnBehaviour : MonoBehaviour
     void OnRespawnTriggered(GameObject other)
     {
         Respawn();
+        onRespawned.Invoke();
     }
 }
