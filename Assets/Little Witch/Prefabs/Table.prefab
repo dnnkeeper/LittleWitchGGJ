@@ -83,7 +83,7 @@ MonoBehaviour:
   mapRoot: {fileID: 8298533477593430061}
   mapBounds: {fileID: 3844196152900406580}
   mapObjectsSettings: []
-  highlightPrefab: {fileID: 8716190942569517529, guid: acf9e90f70a90c54bab81859e4839f57, type: 3}
+  highlightPrefab: {fileID: 8716190942569517529, guid: 899a139ed05b51d458e92d8908260ac2, type: 3}
   tableLayerMask:
     serializedVersion: 2
     m_Bits: 32768
