@@ -20,7 +20,7 @@ public class Map3D : MonoBehaviour
     public GameObject highlightPrefab;
 
     public LayerMask tableLayerMask = 1 << 2;
-
+    public float snapDistance = 0.1f;
     // Start is called before the first frame update
     void Start()
     {
@@ -56,6 +56,7 @@ public class Map3D : MonoBehaviour
                 draggable.enabled = mapObjectSetting.draggable;
                 draggable.layerMask = tableLayerMask;
                 draggable.gameObject.layer = mapRoot.gameObject.layer;
+                draggable.snapDistance = snapDistance * mapRoot.transform.lossyScale.x;
                 HighlightObject(copy, draggable.enabled);
             }
         }

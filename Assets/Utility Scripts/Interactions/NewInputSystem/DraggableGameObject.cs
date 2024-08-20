@@ -18,7 +18,7 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
         placeableObject.GetComponent<Collider>().enabled = false;
         //placeableObject.Relocate(eventData.pointerCurrentRaycast.worldPosition, placeableObject.transform.rotation);
     }
-
+    float targetRotationY = 0;
     public void OnDrag(PointerEventData eventData)
     {
         if (!enabled)
@@ -27,8 +27,19 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
         
         if (Mouse.current.rightButton.IsPressed())
         {
-            Quaternion newRotation = Quaternion.Euler(0, eventData.delta.x * 0.5f, 0) * placeableObject.transform.rotation;
-            placeableObject.Relocate(transform.position, newRotation, 0f, false);
+            float snapAngle = 10f;
+            targetRotationY += eventData.delta.x * 0.5f;
+            if (Mathf.Abs(targetRotationY) >= snapAngle)
+            {
+                //.Log("targetRotationY = " + targetRotationY);
+                var Y = Mathf.Round(targetRotationY / snapAngle) * snapAngle;
+                //Debug.Log("Y = " + Y);
+                Quaternion newRotation = Quaternion.Euler(0, Y, 0) * placeableObject.transform.rotation;
+                placeableObject.Relocate(transform.position, newRotation, 0f, false);
+                targetRotationY = 0f;
+            }
+            //Quaternion newRotation = Quaternion.Euler(0, eventData.delta.x * 0.5f, 0) * placeableObject.transform.rotation;
+            //placeableObject.Relocate(transform.position, newRotation, 0f, false);
         }
         else if (Mouse.current.leftButton.IsPressed())
         {
@@ -40,7 +51,21 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
             if ( Physics.Raycast(ray, out RaycastHit hit, 200, layerMask, QueryTriggerInteraction.Ignore))
             {
                 var hitPosition = hit.point;
-                
+                if (transform.parent != null)
+                {
+                    var localPosition = transform.parent.InverseTransformPoint(hitPosition);
+                    localPosition = SnapPositionToGrid(localPosition, snapDistance);
+                    Debug.Log($"HitPositionLocal: {localPosition}");
+                    hitPosition = transform.parent.TransformPoint(localPosition);
+                    //hitPosition = SnapPositionToGrid(hitPosition, transform.parent.lossyScale.x);
+                    Debug.Log($"HitPosition: {hitPosition}");
+                }
+                else
+                {
+                    hitPosition = SnapPositionToGrid(hitPosition, snapDistance);
+                }
+                hitPosition.y = placeableObject.transform.position.y;
+
                 if (!isDragging)
                 {
                     isDragging = true;
@@ -49,8 +74,8 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
                 if (dragLimitBounds == null || dragLimitBounds.size.sqrMagnitude < 0.01f || dragLimitBounds.Contains(hitPosition))
                 {
                     DrawBox(dragLimitBounds.center, Quaternion.identity, dragLimitBounds.size, Color.green, Time.deltaTime);
-
-                    placeableObject.Relocate(hitPosition, placeableObject.transform.rotation);
+                    placeableObject.transform.position = hitPosition;
+                    //placeableObject.Relocate(hitPosition, placeableObject.transform.rotation);
                 }
                 else
                 {
@@ -61,12 +86,14 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
         
     }
 
-    Vector3 SnapPositionToGrid(Vector3 originalPosition)
+    Vector3 SnapPositionToGrid(Vector3 originalPosition, float snapStep)
     {
+        if (snapStep <= Mathf.Epsilon)
+            return originalPosition;
         return new Vector3(
-            Mathf.Round(originalPosition.x / snapDistance) * snapDistance,
-            Mathf.Round(originalPosition.y / snapDistance) * snapDistance,
-            Mathf.Round(originalPosition.z / snapDistance) * snapDistance
+            Mathf.Round(originalPosition.x / snapStep) * snapStep,
+            originalPosition.y, //Mathf.Round(originalPosition.y / snapDistance) * snapDistance,
+            Mathf.Round(originalPosition.z / snapStep) * snapStep
         );
     }
 

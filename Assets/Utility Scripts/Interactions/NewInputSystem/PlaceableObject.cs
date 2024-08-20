@@ -212,10 +212,9 @@ public class PlaceableObject : MonoBehaviour, IPlaceableObject
             Debug.LogWarning($"Can't be placed here, return to {lastValidPosition}");
             //DrawBox(transform.position, transform.rotation, colliderExtentsLocalScaled * 2f, Color.red, 10f);
 
-            ReturnPosition();
-            ReturnRotation();
-            // Somehow it's not working, so we need to wait a bit
-            //Invoke(nameof(ReturnToValidPosition), 0.1f);
+            //ReturnPosition();
+            //ReturnRotation();
+            
             //DrawBox(transform.position, transform.rotation, colliderExtentsLocalScaled * 2f, Color.blue, 10f);
         }
 

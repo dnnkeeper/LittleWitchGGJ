@@ -6,7 +6,8 @@ public class CinemachineCameraDistance : MonoBehaviour
     CinemachineThirdPersonFollow cinemachineThirdPersonFollow;
     public float lerpAmount = 15f;
     public float sensivityModifier = 1f;
-
+    public float min = 1f;
+    public float max = 10f;
     float targetDistance;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -17,12 +18,12 @@ public class CinemachineCameraDistance : MonoBehaviour
 
     public void AddCameraDistance(float add)
     {
-        targetDistance += add * sensivityModifier;
+        SetCameraDistance(targetDistance + add * sensivityModifier);
     }
 
     public void SetCameraDistance(float distance)
     {
-        targetDistance = distance;
+        targetDistance = Mathf.Clamp(distance, min, max);
     }
 
     private void Update()

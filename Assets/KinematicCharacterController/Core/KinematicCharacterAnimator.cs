@@ -37,12 +37,12 @@ public class KinematicCharacterAnimator : MonoBehaviour
             animator.SetBool("IsGrounded", motor.GroundingStatus.IsStableOnGround);
         }
         if (skeletonAnimation!=null){
-            if (velocityX > 0)
+            if (velocityX > 1f)
             {
                 skeletonAnimation.transform.localScale = new Vector3(1, 1, 1);
                 skeletonAnimation.AnimationState.SetAnimation(0, "walk", true);
             }
-            else if (velocityX<0)
+            else if (velocityX < -1f)
             {
                 skeletonAnimation.transform.localScale = new Vector3 (-1, 1, 1);
 

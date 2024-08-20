@@ -431,7 +431,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 10, y: 2}
+  m_SizeDelta: {x: 10, y: 3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &4586009348270655122
 MeshRenderer:
@@ -759,7 +759,7 @@ Transform:
   m_GameObject: {fileID: 3890440092496341134}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.05, z: -10}
+  m_LocalPosition: {x: 0, y: 2.0499992, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -826,11 +826,11 @@ MonoBehaviour:
   CameraSide: 1
   CameraDistance: 10
   AvoidObstacles:
-    Enabled: 0
+    Enabled: 1
     CollisionFilter:
       serializedVersion: 2
       m_Bits: 1
-    IgnoreTag: 
+    IgnoreTag: Player
     CameraRadius: 0.2
     DampingIntoCollision: 0
     DampingFromCollision: 0.5
@@ -848,6 +848,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lerpAmount: 10
   sensivityModifier: 1
+  min: 1
+  max: 25
 --- !u!1 &4301189160155442244
 GameObject:
   m_ObjectHideFlags: 0
@@ -1515,7 +1517,7 @@ Transform:
   m_GameObject: {fileID: 6897012902237569403}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1539,6 +1541,8 @@ MonoBehaviour:
   findMainCamera: 1
   target: {fileID: 0}
   lookAway: 1
+  updateMode: 0
+  rotateBeforeRendering: 1
 --- !u!1 &7384599140882570134
 GameObject:
   m_ObjectHideFlags: 0
@@ -1819,6 +1823,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 399178789435890759}
+  - component: {fileID: 3197271060454673611}
   m_Layer: 0
   m_Name: InteractionAvailableHint
   m_TagString: Untagged
@@ -1835,13 +1840,30 @@ Transform:
   m_GameObject: {fileID: 9146687644976610561}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 385254371898740140}
   m_Father: {fileID: 5046238682899326360}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3197271060454673611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9146687644976610561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32d37f50b7ba14b41a210cf24f4a3c1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  findMainCamera: 1
+  target: {fileID: 0}
+  lookAway: 1
+  updateMode: 1
+  rotateBeforeRendering: 1
 --- !u!1001 &8552842984288852904
 PrefabInstance:
   m_ObjectHideFlags: 0
