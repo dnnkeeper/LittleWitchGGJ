@@ -55,10 +55,10 @@ public class DraggableGameObject : MonoBehaviour, IBeginDragHandler, IDragHandle
                 {
                     var localPosition = transform.parent.InverseTransformPoint(hitPosition);
                     localPosition = SnapPositionToGrid(localPosition, snapDistance);
-                    Debug.Log($"HitPositionLocal: {localPosition}");
+                    //Debug.Log($"HitPositionLocal: {localPosition}");
                     hitPosition = transform.parent.TransformPoint(localPosition);
                     //hitPosition = SnapPositionToGrid(hitPosition, transform.parent.lossyScale.x);
-                    Debug.Log($"HitPosition: {hitPosition}");
+                    //Debug.Log($"HitPosition: {hitPosition}");
                 }
                 else
                 {
