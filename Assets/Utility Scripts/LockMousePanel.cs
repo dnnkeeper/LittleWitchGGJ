@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class LockMousePanel : MonoBehaviour, IPointerClickHandler
 {
     public UnityEvent onLocked, onUnlocked;
+    public UnityEvent<bool> onCursorVisible;
 
     //void Update()
     //{
@@ -64,13 +65,14 @@ public class LockMousePanel : MonoBehaviour, IPointerClickHandler
     public void HideCursor(bool value)
     {
         Debug.Log("[LockCursor] LockMousePanel.HideCursor " + value);
-        Cursor.visible = !value;
+        SetCursorVisible(!value);
     }
 
     public void SetCursorVisible(bool value)
     {
         Debug.Log("[LockCursor] LockMousePanel.SetCursorVisible " + value);
         Cursor.visible = value;
+        onCursorVisible.Invoke(value);
     }
 
     //public void SetCursorVisibileAndUnlocked(bool value)
@@ -92,7 +94,7 @@ public class LockMousePanel : MonoBehaviour, IPointerClickHandler
     {
         Debug.Log("[LockCursor] LockMousePanel.OnDisable unlock cursor");
 
-        Cursor.visible = true;
+        SetCursorVisible(true);
         Cursor.lockState = CursorLockMode.None;
     }
 
@@ -100,7 +102,7 @@ public class LockMousePanel : MonoBehaviour, IPointerClickHandler
     {
         Debug.Log("[LockCursor] LockMousePanel.OnDestroy unlock cursor");
 
-        Cursor.visible = true;
+        SetCursorVisible(true);
         Cursor.lockState = CursorLockMode.None;
     }
 
